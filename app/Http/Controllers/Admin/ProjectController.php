@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreProjectRequest;
 use App\Models\Project;
+use App\Models\Type;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -15,7 +17,7 @@ class ProjectController extends Controller
     public function index()
     {
         $projects = Project::all();
-        return view("admin.projects.index", compact("projects"));
+        return view("admin.projects.index" , compact("projects"));
     }
 
     /**
@@ -23,30 +25,24 @@ class ProjectController extends Controller
      */
     public function create()
     {
-        return view("admin.projects.create");
+        $types = Type::all();
+        return view("admin.projects.create", compact("types"));
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreProjectRequest $request)
     {
-        $request->validate([
-            "title" => "required|max:30",
-            "description" => "max:600"
-        ], [
-            "title.required" => "Il titolo è necessario!",
-            "title.max" => "La lunghezza massima è di 600 caratteri!"
-        ]);
-        $data = $request->all();
+        $data = $request->validated();
         $newProject = new Project();
         $newProject->fill($data);
         $newProject->slug = Str::slug($newProject->title);
-        // dd($newProject);
+        dd($newProject);
 
         $newProject->save();
 
-        return redirect()->route("admin.projects.index");
+        return redirect()->route("admin.projects.index")->with("messageUpload", "Il progetto ". $newProject->title . " è stato aggiunto con successo!");;   
     }
 
     /**
@@ -72,19 +68,17 @@ class ProjectController extends Controller
      */
     public function update(Request $request, string $slug)
     {
-        $request->validate([
-            "title" => "required|max:30",
-            "description" => "max:600"
-        ], [
-            "title.required" => "Il titolo è necessario!",
-            "title.max" => "La lunghezza massima è di 600 caratteri!"
-        ]);
         $project = Project::where("slug", $slug)->first();
-
-        $data = $request->all();
-
+        
+        $data = $request->validated();
+        
+        $project->slug = Str::slug($request->title);
         $project->update($data);
-        return redirect()->route("admin.projects.index");
+        // dd($project);
+        
+        // dd($project);
+        return redirect()->route("admin.projects.index")->with("messageEdit", "Il progetto ". $project->title . " è stato aggiornato con successo!");;
+
     }
 
     /**
@@ -94,7 +88,13 @@ class ProjectController extends Controller
     {
         $project = Project::findOrFail($id);
         $project->delete();
+        
+        return redirect()->route("admin.projects.index")->with("messageDelete", "Il progetto ". $project->title . " è stato eliminato con successo!");
+    }
 
-        return redirect()->route("admin.projects.index")->with("message", "Il progetto " . $project->title . " è stato eliminato con successo!");
+    public function editselector (){
+        $projects = Project::all();
+
+        return view("admin.projects.editselector", compact("projects"));
     }
 }

@@ -27,6 +27,6 @@ Route::middleware('auth')
     ->group(function () {
         Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
         Route::resource("projects", ProjectController::class);
+        Route::get("/editselector", [ProjectController::class, "editselector"])->name("editselector");
     });
-
 require __DIR__ . '/auth.php';
