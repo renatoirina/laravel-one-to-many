@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateProjectRequest extends FormRequest
 {
@@ -19,10 +20,10 @@ class UpdateProjectRequest extends FormRequest
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
-    public function rules(): array
+    public function rules(): array  
     {
         return [
-            "title" => "required|max:30|unique:projects",
+            "title" => ["required","max:30", Rule::unique("projects", "title")->ignore($this->project)],
             "description" => "max:300",
             "type_id"=>"required|exists:types,id"
         ];
@@ -31,11 +32,11 @@ class UpdateProjectRequest extends FormRequest
     public function messages()
     {
         return [
-            "title.required" => "Il titolo è necessario per aggiungere un nuovo progetto!",
+            "title.required" => "Il titolo è necessario per modificare un progetto!",
             "title.max" => "La lunghezza massima della titolo è di 30 caratteri!",
-            "title.unique" => "Il titolo è già utilizzato cambia titolo!",
+            "title.unique" => "Il titolo è già in utilizzo, cambia titolo!",
             "description.max" => "La lunghezza massima della descrizione è di 300 caratteri!",
-            "type_id.required" => "Il linguaggio è necessario per aggiungere un nuovo progetto!",
+            "type_id.required" => "Il linguaggio è necessario per modificare un nuovo progetto!",
             "type_id.exists" => "Questo linguaggio non esiste."
         ];
     }
